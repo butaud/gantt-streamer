@@ -1,5 +1,4 @@
 import fs from "fs";
-import { Stream } from "stream";
 
 type StreamedWorkTask = {
   id: string;
@@ -178,5 +177,16 @@ const ganttLinesForStream = (
       );
     }
   }
-  console.log(outputGanttLines.map((line) => line.toString()).join("\n"));
+  const taskDefinitions = outputGanttLines
+    .map((line) => line.toString())
+    .join("\n");
+  mermaid.initialize({ gantt: {} });
+  const chartDefinition = `
+gantt
+    title Grid View Execution Plan
+    dateFormat  YYYY-MM-DD
+    excludes    weekends
+    ${taskDefinitions}
+      `;
+  fs.writeFileSync(process.argv[3], chartDefinition);
 })();
