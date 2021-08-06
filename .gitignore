@@ -1,0 +1,6 @@
+/dist
+/node_modules
+*.mmd
+yarn-error.log
+/*.gs
+/*.svg
