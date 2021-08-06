@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsc && node ./dist/start.js",
     "generate-mmc": "node ./dist/generate-mmc.js",
-    "start-no-compile": "node ./dist/start.js ./grid-view.gs ./grid-view.mmd && mmdc -w 1600 -i ./grid-view.mmd -o ./grid-view.svg",
+    "start-no-compile": "node ./dist/start.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Carter Butaud <carterbutaud@gmail.com>",
