@@ -1,0 +1,21 @@
+{
+  "name": "gantt-streamer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node ./dist/start.js ./grid-view.gs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Carter Butaud <carterbutaud@gmail.com>",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/mermaid": "^8.2.7",
+    "@types/node": "^16.4.12",
+    "eslint": "^7.32.0",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "mermaid": "^8.11.4"
+  }
+}
