@@ -1,7 +1,7 @@
 # gantt-streamer
 Creates gantt chart with serialized work streams. Takes in a "|" separated file with lines in this format:
 ```
-<task id>|<task name>|<cost in days>|<whitespace separated dependency task ids>|<work stream name (can be empty)>|<optional: start date>
+<task id, preceded by ! if critical>|<task name>|<cost in days>|<whitespace separated dependency task ids>|<work stream name (can be empty)>|<optional: start date>
 ```
 
 Outputs a mermaid-cli-generated Gantt chart SVG where the tasks are serialized by work stream. This can be useful to come up with a delivery plan for

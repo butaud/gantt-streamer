@@ -8,6 +8,7 @@ type StreamedWorkTask = {
   dependencies: string[];
   stream?: string;
   startDate?: string;
+  critical: boolean;
 };
 
 class MermaidSectionTitle {
@@ -27,22 +28,21 @@ class MermaidGanttTask {
   dependencies: string[];
   readonly startDate?: string;
   readonly duration: number;
-  constructor(
-    name: string,
-    dependencies: string[],
-    duration: number,
-    id?: string,
-    startDate?: string
-  ) {
-    this.id = id;
-    this.name = name;
-    this.dependencies = dependencies;
-    this.duration = duration;
-    this.startDate = startDate;
+  readonly critical: boolean;
+  constructor(streamedWorkTask: StreamedWorkTask) {
+    this.id = streamedWorkTask.id;
+    this.name = streamedWorkTask.name;
+    this.dependencies = streamedWorkTask.dependencies;
+    this.duration = streamedWorkTask.duration;
+    this.startDate = streamedWorkTask.startDate;
+    this.critical = streamedWorkTask.critical;
   }
 
   toString() {
     let response = `${this.name}  :`;
+    if (this.critical) {
+      response += "crit, ";
+    }
     if (this.id) {
       response += `${this.id}, `;
     }
@@ -82,10 +82,17 @@ const parseFile = (fullContents: string): StreamedChartDefinition => {
  */
 const parseLines = (lines: string[]): StreamedWorkTask[] =>
   lines.map((line) => {
-    const [id, name, duration, dependencies, stream, startDate] =
+    const [idField, name, duration, dependencies, stream, startDate] =
       line.split("|");
+    let id = idField.trim();
+    let critical = false;
+    if (id.startsWith("!")) {
+      id = id.substring(1);
+      critical = true;
+    }
     return {
-      id: id.trim(),
+      id,
+      critical,
       name: name.trim(),
       duration: parseInt(duration.trim()),
       dependencies: dependencies
@@ -146,13 +153,7 @@ const ganttLinesForStream = (
   ];
   let previousTaskId: string;
   tasks.forEach((task) => {
-    const ganttTask = new MermaidGanttTask(
-      task.name,
-      task.dependencies,
-      task.duration,
-      task.id,
-      task.startDate
-    );
+    const ganttTask = new MermaidGanttTask(task);
     if (
       serialize &&
       previousTaskId &&
