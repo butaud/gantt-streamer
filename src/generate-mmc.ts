@@ -1,4 +1,5 @@
 import fs from "fs";
+import { Stream } from "stream";
 
 type StreamedWorkTask = {
   id: string;
@@ -56,29 +57,45 @@ class MermaidGanttTask {
   }
 }
 
+type StreamedChartDefinition = {
+  title: string;
+  tasks: StreamedWorkTask[];
+};
+
+const parseFile = (fullContents: string): StreamedChartDefinition => {
+  const lines = fullContents
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line);
+  if (lines.length < 1) {
+    throw new Error("Must have a title line");
+  }
+  return {
+    title: lines[0],
+    tasks: parseLines(lines.splice(1)),
+  };
+};
+
 /**
  * Each line should have the following format:
  * taskId|task name|4|otherTaskId1 otherTaskId2|bob|2021-08-09
  */
-const parseFile = (contents: string): StreamedWorkTask[] =>
-  contents
-    .split("\n")
-    .filter((line) => line.trim())
-    .map((line) => {
-      const [id, name, duration, dependencies, stream, startDate] =
-        line.split("|");
-      return {
-        id: id.trim(),
-        name: name.trim(),
-        duration: parseInt(duration.trim()),
-        dependencies: dependencies
-          .trim()
-          .split(new RegExp("\\s+"))
-          .filter((dependency) => dependency),
-        stream: stream.trim() || undefined,
-        startDate: startDate?.trim(),
-      };
-    });
+const parseLines = (lines: string[]): StreamedWorkTask[] =>
+  lines.map((line) => {
+    const [id, name, duration, dependencies, stream, startDate] =
+      line.split("|");
+    return {
+      id: id.trim(),
+      name: name.trim(),
+      duration: parseInt(duration.trim()),
+      dependencies: dependencies
+        .trim()
+        .split(new RegExp("\\s+"))
+        .filter((dependency) => dependency),
+      stream: stream.trim() || undefined,
+      startDate: startDate?.trim(),
+    };
+  });
 
 const UNASSIGNED_STREAM = "unassigned";
 const splitByStream = (
@@ -153,8 +170,8 @@ const ganttLinesForStream = (
   const inputFn = process.argv[2];
 
   const contents = fs.readFileSync(inputFn).toString("utf-8");
-  const tasks = parseFile(contents);
-  const tasksByStream = splitByStream(tasks);
+  const chartDefinition = parseFile(contents);
+  const tasksByStream = splitByStream(chartDefinition.tasks);
   const orderedTasksByStream: Record<string, StreamedWorkTask[]> = {};
   for (const stream in tasksByStream) {
     orderedTasksByStream[stream] = orderStream(tasksByStream[stream]);
@@ -180,12 +197,12 @@ const ganttLinesForStream = (
   const taskDefinitions = outputGanttLines
     .map((line) => line.toString())
     .join("\n");
-  const chartDefinition = `
+  const mermaidChartDefinition = `
 gantt
-    title Grid View Execution Plan
+    title ${chartDefinition.title}
     dateFormat  YYYY-MM-DD
     excludes    weekends
     ${taskDefinitions}
       `;
-  fs.writeFileSync(process.argv[3], chartDefinition);
+  fs.writeFileSync(process.argv[3], mermaidChartDefinition);
 })();
